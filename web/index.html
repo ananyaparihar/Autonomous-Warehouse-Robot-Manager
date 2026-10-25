@@ -1,0 +1,369 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Warehouse Robot Manager</title>
+<style>
+:root{--bg:#e6ebef;--panel:#f7f9fa;--ink:#14202b;--muted:#586979;--line:#c9d2d9;--navy:#14202b;--navy2:#1d2e3d;--yellow:#ffb000;--teal:#0e7c86;--red:#c23b2e;--green:#2b8a57}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font:15px/1.5 "Segoe UI Variable Text","Segoe UI",system-ui,sans-serif}
+h1,h2,h3,h4,.num{font-family:Bahnschrift,"Segoe UI Variable Display","Segoe UI",system-ui,sans-serif;font-weight:600;margin:0;letter-spacing:.01em}
+button,input,select{font:inherit;color:inherit}
+:focus-visible{outline:3px solid var(--yellow);outline-offset:2px}
+header{background:var(--navy);color:#fff;display:flex;align-items:center;gap:24px;padding:12px 28px;flex-wrap:wrap}
+.brand{display:flex;align-items:center;gap:12px;font-family:Bahnschrift,"Segoe UI",sans-serif;font-size:19px;font-weight:600}
+.logo{width:30px;height:30px;border-radius:8px;background:var(--yellow);display:grid;place-items:center}
+nav{display:flex;gap:4px;margin-left:12px}
+nav button{background:none;border:0;color:#a9bac8;padding:8px 14px;border-radius:8px;cursor:pointer}
+nav button[aria-current=true]{background:var(--navy2);color:#fff;box-shadow:inset 0 -3px 0 var(--yellow)}
+nav button:hover{color:#fff}
+.pill{margin-left:auto;font-size:13px;display:flex;align-items:center;gap:8px;color:#c6d3de}
+.dot{width:9px;height:9px;border-radius:50%;background:#7b8a97}.dot.ok{background:#3ecf8e}.dot.bad{background:#ff6b5a}
+main{max-width:1320px;margin:0 auto;padding:24px 28px 60px}
+section[hidden]{display:none}
+.floor{display:grid;grid-template-columns:minmax(0,1.7fr) minmax(300px,1fr);gap:22px;align-items:start}
+@media(max-width:960px){.floor{grid-template-columns:1fr}header{padding:12px 16px}main{padding:16px}}
+.map{background:var(--navy);border-radius:16px;padding:18px;color:#d5e0ea;position:relative;overflow:hidden}
+.map h2{color:#fff;font-size:20px}.map p{margin:2px 0 12px;color:#93a6b6;font-size:14px}
+svg{width:100%;height:auto;display:block;background-image:linear-gradient(#ffffff0d 1px,transparent 1px),linear-gradient(90deg,#ffffff0d 1px,transparent 1px);background-size:32px 32px;border-radius:10px}
+.route{stroke-dasharray:10 9;animation:flow 1.2s linear infinite}
+@keyframes flow{to{stroke-dashoffset:-19}}
+@media(prefers-reduced-motion:reduce){.route{animation:none}}
+.legend{display:flex;gap:18px;flex-wrap:wrap;margin-top:12px;font-size:13px;color:#93a6b6}
+.legend i{display:inline-block;width:11px;height:11px;border-radius:50%;margin-right:6px;vertical-align:-1px}
+.side{display:grid;gap:18px}
+.card{background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:18px}
+.stats{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;text-align:left}
+.stats b{display:block;font-size:26px;line-height:1.1}.stats span{font-size:12.5px;color:var(--muted)}
+.btn{background:var(--yellow);color:#2a1f00;border:0;border-radius:10px;padding:11px 18px;font-weight:600;cursor:pointer;transition:transform .1s,filter .1s}
+.btn:hover{filter:brightness(1.06)}.btn:active{transform:translateY(1px)}.btn:disabled{opacity:.5;cursor:wait}
+.btn.ghost{background:transparent;border:1px solid var(--line);color:var(--ink);padding:7px 12px;font-weight:500}
+.btn.ghost:hover{border-color:var(--ink)}.btn.danger{color:var(--red)}
+.big{width:100%;font-size:16px;padding:14px}
+.steps{list-style:none;margin:12px 0 0;padding:0;display:grid;gap:14px}
+.steps li{display:grid;grid-template-columns:30px 1fr;gap:12px}
+.steps .n{width:30px;height:30px;border-radius:50%;background:var(--navy);color:var(--yellow);display:grid;place-items:center;font-family:Bahnschrift,sans-serif;font-weight:600}
+.steps h4{font-size:15px}.steps p{margin:2px 0 0;color:var(--muted);font-size:13.5px}
+.steps .fact{margin-top:4px;color:var(--ink);font-size:13.5px;font-weight:600;background:#fff3cf;border-radius:6px;padding:2px 8px;display:inline-block}
+.tag{font-family:"Segoe UI",sans-serif;font-size:11.5px;font-weight:500;background:#dde6ec;color:#35526a;border-radius:20px;padding:1px 9px;margin-left:6px;vertical-align:1px}
+.note{font-size:13.5px;color:var(--muted);margin:10px 0 0}
+.head{display:flex;justify-content:space-between;align-items:end;gap:16px;margin-bottom:14px;flex-wrap:wrap}
+.head h2{font-size:24px}.head p{margin:2px 0 0;color:var(--muted)}
+.tablewrap{overflow-x:auto;background:var(--panel);border:1px solid var(--line);border-radius:14px}
+table{width:100%;border-collapse:collapse;min-width:640px}
+th,td{text-align:left;padding:11px 14px;border-bottom:1px solid var(--line);white-space:nowrap}
+th{font-size:13px;color:var(--muted);font-weight:600;background:#eef2f5}
+tr:last-child td{border-bottom:0}
+td.r,th.r{text-align:right}
+.badge{border-radius:20px;padding:2px 11px;font-size:12.5px;font-weight:600;background:#e1e7ec;color:#3b4b58}
+.badge.pending{background:#fff0c2;color:#6b4b00}.badge.planned{background:#d8ecf9;color:#154a73}
+.badge.completed{background:#d6f0e2;color:#14583a}.badge.cancelled,.badge.rejected{background:#f5dbd8;color:#7b231a}
+.bar{height:6px;background:#dde5ea;border-radius:4px;min-width:70px;overflow:hidden}.bar i{display:block;height:100%;background:var(--teal)}
+form.inline{display:flex;gap:10px;flex-wrap:wrap;align-items:end;background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:14px 16px;margin-bottom:14px}
+label{display:grid;gap:4px;font-size:13px;color:var(--muted)}
+input,select{background:#fff;border:1px solid var(--line);border-radius:8px;padding:8px 10px;min-width:90px}
+.chips{display:flex;gap:6px;flex-wrap:wrap}
+.chips button{border:1px solid var(--line);background:var(--panel);border-radius:20px;padding:4px 13px;cursor:pointer}
+.chips button[aria-pressed=true]{background:var(--navy);color:#fff;border-color:var(--navy)}
+.trips{display:grid;grid-template-columns:repeat(auto-fill,minmax(320px,1fr));gap:16px}
+.trip h3{font-size:18px;display:flex;justify-content:space-between;align-items:center}
+.trip dl{display:grid;grid-template-columns:auto 1fr;gap:4px 14px;margin:12px 0}.trip dt{color:var(--muted)}.trip dd{margin:0;font-weight:600}
+.trip .acts{display:flex;gap:8px;flex-wrap:wrap}
+.empty{padding:36px;text-align:center;color:var(--muted)}
+#toast{position:fixed;left:50%;bottom:24px;transform:translateX(-50%);display:grid;gap:8px;z-index:9}
+#toast div{background:var(--navy);color:#fff;padding:11px 18px;border-radius:10px;box-shadow:0 8px 24px #0004;max-width:min(90vw,560px)}
+#toast div.bad{background:#8e2a20}
+</style>
+</head>
+<body>
+<header>
+  <div class="brand"><div class="logo"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="#2a1f00" stroke-width="2.2" stroke-linecap="round"><rect x="5" y="8" width="14" height="10" rx="2"/><path d="M12 8V4M9 13h.01M15 13h.01"/></svg></div>Warehouse Robot Manager</div>
+  <nav id="nav"></nav>
+  <div class="pill"><span class="dot" id="dot"></span><span id="health">Checking engine</span></div>
+</header>
+<main>
+  <section id="v-floor">
+    <div class="floor">
+      <div class="map">
+        <h2>Warehouse floor</h2>
+        <p id="mapnote">Each circle is a spot on the floor. The yellow line is the robot's planned trip.</p>
+        <div id="mapbox"></div>
+        <div class="legend"><span><i style="background:var(--yellow)"></i>Depot (robot starts here)</span><span><i style="background:var(--teal)"></i>Shelf with a product</span><span><i style="background:#566a7b"></i>Aisle junction</span></div>
+      </div>
+      <div class="side">
+        <div class="card"><div class="stats" id="stats"></div></div>
+        <div class="card">
+          <h3>Plan the next robot trip</h3>
+          <p class="note" style="margin:6px 0 12px">The engine reads all pending orders and decides what the robot carries and where it walks.</p>
+          <button class="btn big" id="plan">Plan next trip</button>
+          <label style="margin-top:14px">Robots<input id="robots" type="number" min="1" max="20" value="2"></label>
+          <button class="btn big" id="planfleet" style="margin-top:10px">Plan trips for all robots</button>
+          <p class="note" id="planmsg"></p>
+        </div>
+        <div class="card">
+          <h3>How a trip gets planned</h3>
+          <ol class="steps" id="steps"></ol>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section id="v-products" hidden>
+    <div class="head"><div><h2>Products</h2><p>Stock on the shelves. Reserved units are promised to orders that are not finished yet.</p></div></div>
+    <div class="tablewrap" id="ptable"></div>
+  </section>
+
+  <section id="v-orders" hidden>
+    <div class="head"><div><h2>Orders</h2><p>Customer requests waiting for the robot.</p></div><div class="chips" id="chips"></div></div>
+    <form class="inline" id="oform">
+      <label>Product<select id="osku" required></select></label>
+      <label>Quantity<input id="oqty" type="number" min="1" value="1" required></label>
+      <label>Urgency (1 = most urgent)<input id="ourg" type="number" min="0" value="3"></label>
+      <button class="btn" type="submit">Create order</button>
+    </form>
+    <div class="tablewrap" id="otable"></div>
+  </section>
+
+  <section id="v-trips" hidden>
+    <div class="head"><div><h2>Robot trips</h2><p>Each trip is one planned run of the robot.</p></div></div>
+    <div class="trips" id="tlist"></div>
+  </section>
+</main>
+<div id="toast" aria-live="polite"></div>
+
+<script>
+const $=s=>document.querySelector(s);
+const esc=s=>String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const S={floor:null,products:[],orders:[],trips:[],stats:null,active:null,filter:'all',pos:null,view:'floor',raf:0};
+const VIEWS=[['floor','Floor'],['products','Products'],['orders','Orders'],['trips','Trips']];
+
+async function api(path,method='GET',body){
+  const r=await fetch(path,{method,headers:body?{'Content-Type':'application/json'}:{},body:body?JSON.stringify(body):undefined});
+  const t=await r.text();let d=null;try{d=t?JSON.parse(t):null}catch(e){}
+  if(!r.ok){let m=d&&d.detail;if(Array.isArray(m))m=m.map(x=>((x.loc||[]).slice(1).join('.')+' '+x.msg).trim()).join('; ');
+    throw new Error(m||('Request failed ('+r.status+')'))}
+  return d;
+}
+function toast(msg,bad){const d=document.createElement('div');d.textContent=msg;if(bad)d.className='bad';$('#toast').append(d);setTimeout(()=>d.remove(),bad?6500:3800)}
+
+async function load(){
+  try{
+    const [p,o,t,s]=await Promise.all([api('/products?limit=500'),api('/orders?limit=500'),api('/trips?limit=500'),api('/stats')]);
+    S.products=p;S.orders=o;S.trips=t;S.stats=s;
+  }catch(e){toast('Cannot reach the server: '+e.message,1);return}
+  try{S.floor=await api('/floor')}catch(e){S.floor=null}
+  if(S.floor){const sig=JSON.stringify([S.floor.nodes,S.floor.edges]);if(!S.pos||S.pos.sig!==sig)S.pos={sig,p:layout(S.floor)}}
+  if(!S.trips.find(t=>t.id===S.active)){const pl=S.trips.find(t=>t.status==='planned');S.active=pl?pl.id:(S.trips[0]?S.trips[0].id:null)}
+  render();
+}
+async function health(){
+  try{const h=await api('/health');$('#dot').className='dot ok';$('#health').textContent='Engine connected (v'+h.engine+')'}
+  catch(e){$('#dot').className='dot bad';$('#health').textContent='Engine offline'}
+}
+
+/* Spread the floor spots out so connected spots sit near each other. */
+function layout(f){
+  const n=f.nodes,W=800,H=520,p=[];
+  if(n>200){const c=Math.ceil(Math.sqrt(n));for(let i=0;i<n;i++)p.push({x:60+(i%c)*(W-120)/c,y:60+Math.floor(i/c)*(H-120)/c});return p}
+  for(let i=0;i<n;i++){const a=6.2832*i/n;p.push({x:W/2+Math.cos(a)*220+((i*37)%11),y:H/2+Math.sin(a)*160+((i*53)%13)})}
+  const maxL=Math.max(1,...f.edges.map(e=>e.length));
+  for(let it=0;it<400;it++){
+    const fx=new Array(n).fill(0),fy=new Array(n).fill(0);
+    for(let i=0;i<n;i++)for(let j=i+1;j<n;j++){
+      const dx=p[i].x-p[j].x,dy=p[i].y-p[j].y,d=Math.hypot(dx,dy)||.01,F=11000/(d*d);
+      fx[i]+=dx/d*F;fy[i]+=dy/d*F;fx[j]-=dx/d*F;fy[j]-=dy/d*F}
+    f.edges.forEach(e=>{if(e.u===e.v)return;
+      const dx=p[e.v].x-p[e.u].x,dy=p[e.v].y-p[e.u].y,d=Math.hypot(dx,dy)||.01,F=(d-(70+e.length/maxL*100))*.06;
+      fx[e.u]+=dx/d*F;fy[e.u]+=dy/d*F;fx[e.v]-=dx/d*F;fy[e.v]-=dy/d*F});
+    for(let i=0;i<n;i++){fx[i]+=(W/2-p[i].x)*.012;fy[i]+=(H/2-p[i].y)*.012;
+      p[i].x+=Math.max(-10,Math.min(10,fx[i]));p[i].y+=Math.max(-10,Math.min(10,fy[i]))}
+  }
+  const xs=p.map(q=>q.x),ys=p.map(q=>q.y),x0=Math.min(...xs),x1=Math.max(...xs),y0=Math.min(...ys),y1=Math.max(...ys);
+  const k=Math.min((W-150)/Math.max(x1-x0,1),(H-130)/Math.max(y1-y0,1),2.2);
+  return p.map(q=>({x:W/2+(q.x-(x0+x1)/2)*k,y:H/2+(q.y-(y0+y1)/2)*k}));
+}
+
+function activeTrip(){return S.trips.find(t=>t.id===S.active)||null}
+
+function drawMap(){
+  cancelAnimationFrame(S.raf);
+  const box=$('#mapbox');
+  if(!S.floor){box.innerHTML='<div class="empty">No floor yet.<br>Run <b>py seed_demo.py</b> in the api folder to load a demo warehouse.</div>';return}
+  const f=S.floor,p=S.pos.p,t=activeTrip();
+  const shelf={};S.products.forEach(x=>{(shelf[x.node]=shelf[x.node]||[]).push(x)});
+  let g='';
+  f.edges.forEach(e=>{if(e.u===e.v)return;const a=p[e.u],b=p[e.v];
+    g+=`<line x1="${a.x}" y1="${a.y}" x2="${b.x}" y2="${b.y}" stroke="#41566a" stroke-width="2.5"/>`;
+    if(f.nodes<=40)g+=`<text x="${(a.x+b.x)/2}" y="${(a.y+b.y)/2-5}" fill="#7e94a6" font-size="11" text-anchor="middle">${e.length}</text>`});
+  let pts=[];
+  if(t){pts=t.route.map(n=>p[n]);
+    g+=`<polyline class="route" points="${pts.map(q=>q.x+','+q.y).join(' ')}" fill="none" stroke="#ffb000" stroke-width="5" stroke-linecap="round" stroke-linejoin="round" opacity=".95"/>`}
+  for(let i=0;i<f.nodes;i++){
+    const q=p[i],dep=i===f.depot,items=shelf[i]||[];
+    const fill=dep?'#ffb000':items.length?'#0e7c86':'#566a7b';
+    g+=`<circle cx="${q.x}" cy="${q.y}" r="${dep?19:15}" fill="${fill}" stroke="#14202b" stroke-width="3"/>`;
+    g+=`<text x="${q.x}" y="${q.y+4.5}" fill="${dep?'#2a1f00':'#fff'}" font-size="13" font-weight="700" text-anchor="middle">${dep?'D':i}</text>`;
+    if(items.length&&f.nodes<=60)g+=`<text x="${q.x}" y="${q.y+34}" fill="#cfe0ec" font-size="12" text-anchor="middle">${esc(items[0].name.slice(0,16))}</text>`}
+  if(t)t.stops.forEach((s,i)=>{const q=p[s.node];
+    g+=`<circle cx="${q.x+16}" cy="${q.y-16}" r="10" fill="#fff" stroke="#ffb000" stroke-width="3"/><text x="${q.x+16}" y="${q.y-12}" font-size="12" font-weight="700" fill="#14202b" text-anchor="middle">${i+1}</text>`});
+  g+='<g id="bot" visibility="hidden"><circle r="9" fill="#fff" stroke="#14202b" stroke-width="3"/><circle r="3.5" fill="#c23b2e"/></g>';
+  box.innerHTML=`<svg viewBox="0 0 800 520" role="img" aria-label="Warehouse floor map">${g}</svg>`;
+  $('#mapnote').textContent=t?`Trip ${t.id} (${t.status}): the robot leaves the depot, visits the numbered stops in order, and returns. Total walk ${t.distance}.`
+    :'Each circle is a spot on the floor. Plan a trip and the robot\'s route appears here.';
+  if(t&&pts.length>1&&!matchMedia('(prefers-reduced-motion:reduce)').matches)runRobot(pts);
+}
+function runRobot(pts){
+  const bot=$('#bot');if(!bot)return;bot.setAttribute('visibility','visible');
+  const seg=[0];for(let i=1;i<pts.length;i++)seg.push(seg[i-1]+Math.hypot(pts[i].x-pts[i-1].x,pts[i].y-pts[i-1].y));
+  const total=seg[seg.length-1]||1,speed=150,pause=900;let t0=performance.now();
+  const tick=now=>{
+    const cyc=total/speed*1000+pause;let m=(now-t0)%cyc,d=Math.min(total,m/1000*speed),i=1;
+    while(i<seg.length-1&&seg[i]<d)i++;
+    const k=(d-seg[i-1])/Math.max(seg[i]-seg[i-1],.001),a=pts[i-1],b=pts[i];
+    bot.setAttribute('transform',`translate(${a.x+(b.x-a.x)*k},${a.y+(b.y-a.y)*k})`);
+    S.raf=requestAnimationFrame(tick)};
+  S.raf=requestAnimationFrame(tick);
+}
+
+function renderStats(){
+  const s=S.stats||{orders:{},trips:{}};
+  $('#stats').innerHTML=[[s.products||0,'products'],[s.units_in_stock||0,'units in stock'],[s.orders.pending||0,'orders waiting'],[s.trips.planned||0,'trips planned']]
+    .map(([n,l])=>`<div><b class="num">${n}</b><span>${l}</span></div>`).join('');
+}
+function renderSteps(){
+  const t=activeTrip(),st=t?t.stats:{},cap=S.floor?S.floor.capacity:0;
+  const rows=[
+    ['Sort by urgency','min-heap','Orders wait in a line where the most urgent one is always at the front.',t&&`${st.candidates} most urgent orders were considered.`],
+    ['Find each shelf','B+ Tree','A fast index tells the engine which spot each product lives on, even with a million products.',t&&'Every ordered product was looked up in the index.'],
+    ['Fill the backpack','knapsack','The robot can only carry so much, so the engine picks the most valuable mix that still fits.',t&&`Chose ${t.order_ids.length} orders: weight ${t.total_weight} of ${cap}, value ${t.total_value}.`],
+    ['Measure the aisles','Dijkstra','Like a GPS, it finds the shortest walk between every pair of stops.',t&&'Shortest walk found between all stops.'],
+    ['Choose the stop order','Branch and Bound','Tries visiting orders and drops plans that are clearly worse, instead of testing every possibility.',t&&`Checked ${st.bb_nodes_explored} partial plans, skipped ${st.bb_nodes_pruned}. Total walk ${t.distance}.`]];
+  $('#steps').innerHTML=rows.map((r,i)=>`<li><div class="n">${i+1}</div><div><h4>${r[0]}<span class="tag">${r[1]}</span></h4><p>${r[2]}</p>${r[3]?`<span class="fact">${esc(r[3])}</span>`:''}</div></li>`).join('');
+}
+function renderProducts(){
+  const el=$('#ptable');
+  if(!S.products.length){el.innerHTML='<div class="empty">No products yet. Run py seed_demo.py, or add some at /docs.</div>';return}
+  el.innerHTML=`<table><thead><tr><th>SKU</th><th>Name</th><th>Shelf spot</th><th>Stock</th><th>Available</th><th class="r">Unit weight</th><th class="r">Unit value</th><th>Add stock</th></tr></thead><tbody>${
+    S.products.map(p=>{const pct=p.quantity?Math.round(100*p.available/p.quantity):0;
+      return `<tr><td>${p.sku}</td><td><b>${esc(p.name)}</b></td><td>${p.node}</td>
+      <td>${p.quantity} <span class="note">(${p.reserved} reserved)</span></td>
+      <td><div class="bar" title="${p.available} available"><i style="width:${pct}%"></i></div>${p.available}</td>
+      <td class="r">${p.unit_weight}</td><td class="r">${p.unit_value}</td>
+      <td><form data-sku="${p.sku}" class="rs" style="display:flex;gap:6px"><input type="number" min="1" value="5" style="min-width:0;width:64px" aria-label="Units to add for ${esc(p.name)}"><button class="btn ghost">Add</button></form></td></tr>`}).join('')}</tbody></table>`;
+}
+function renderOrders(){
+  $('#osku').innerHTML=S.products.map(p=>`<option value="${p.sku}">${p.sku}: ${esc(p.name)} (${p.available} available)</option>`).join('');
+  const names={};S.products.forEach(p=>names[p.sku]=p.name);
+  $('#chips').innerHTML=['all','pending','planned','completed','cancelled','rejected'].map(f=>`<button data-f="${f}" aria-pressed="${S.filter===f}">${f==='all'?'All':f[0].toUpperCase()+f.slice(1)}</button>`).join('');
+  const rows=S.orders.filter(o=>S.filter==='all'||o.status===S.filter);
+  $('#otable').innerHTML=rows.length?`<table><thead><tr><th>Order</th><th>Product</th><th class="r">Qty</th><th class="r">Weight</th><th class="r">Value</th><th class="r">Urgency</th><th>Status</th><th>Trip</th><th></th></tr></thead><tbody>${
+    rows.map(o=>`<tr><td>#${o.id}</td><td>${esc(names[o.sku]||o.sku)}</td><td class="r">${o.quantity}</td><td class="r">${o.weight}</td><td class="r">${o.value}</td><td class="r">${o.urgency}</td>
+    <td><span class="badge ${o.status}">${o.status}</span>${o.note?` <span class="note">${esc(o.note.replace(/_/g,' '))}</span>`:''}</td><td>${o.trip_id||''}</td>
+    <td>${o.status==='pending'?`<button class="btn ghost danger" data-cancel="${o.id}">Cancel</button>`:''}</td></tr>`).join('')}</tbody></table>`
+    :'<div class="empty">No orders here. Create one above and then plan a trip.</div>';
+}
+function renderTrips(){
+  $('#tlist').innerHTML=S.trips.length?S.trips.map(t=>`<div class="card trip"><h3>Trip ${t.id}<span class="badge ${t.status}">${t.status}</span></h3>
+    <dl><dt>Orders</dt><dd>${t.order_ids.map(i=>'#'+i).join(', ')}</dd><dt>Walk</dt><dd>${t.distance}</dd><dt>Weight carried</dt><dd>${t.total_weight}</dd><dt>Value</dt><dd>${t.total_value}</dd>
+    <dt>Route</dt><dd style="font-weight:400">${t.route.join(' → ')}</dd></dl>
+    <div class="acts"><button class="btn ghost" data-show="${t.id}">Show on map</button>${t.status==='planned'?`<button class="btn" data-done="${t.id}">Mark as completed</button><button class="btn ghost danger" data-undo="${t.id}">Cancel trip</button>`:''}</div></div>`).join('')
+    :'<div class="empty" style="grid-column:1/-1">No trips yet. Go to Floor and press Plan next trip.</div>';
+}
+function render(){renderStats();drawMap();renderSteps();renderProducts();renderOrders();renderTrips()}
+
+function show(v){S.view=v;VIEWS.forEach(([k])=>{$('#v-'+k).hidden=k!==v});
+  $('#nav').querySelectorAll('button').forEach(b=>b.setAttribute('aria-current',b.dataset.v===v));
+  if(v==='floor')drawMap();else cancelAnimationFrame(S.raf)}
+$('#nav').innerHTML=VIEWS.map(([k,l])=>`<button data-v="${k}">${l}</button>`).join('');
+$('#nav').onclick=e=>{if(e.target.dataset.v)show(e.target.dataset.v)};
+
+async function act(fn,ok){try{const r=await fn();if(ok)toast(typeof ok==='function'?ok(r):ok);await load();return r}catch(e){toast(e.message,1)}}
+$('#plan').onclick=async()=>{const b=$('#plan');b.disabled=true;
+  const r=await act(()=>api('/trips/plan','POST'));b.disabled=false;
+  if(r){if(r.trip){S.active=r.trip.id;render()}
+    const bits=[r.message];if(r.deferred.length)bits.push(`Left for later: ${r.deferred.map(i=>'#'+i).join(', ')}.`);
+    if(r.rejected.length)bits.push(`Rejected: ${r.rejected.map(x=>'#'+x.order_id+' ('+x.reason.replace(/_/g,' ')+')').join(', ')}.`);
+    $('#planmsg').textContent=bits.join(' ')}};
+$('#planfleet').onclick=async()=>{const b=$('#planfleet');b.disabled=true;
+  const n=Math.max(1,Math.min(20,+$('#robots').value||2));
+  const r=await act(()=>api('/trips/plan-fleet?robots='+n,'POST'));b.disabled=false;
+  if(r){if(r.trips.length){S.active=r.trips[0].id;render()}
+    const bits=[r.message];if(r.deferred.length)bits.push(`Left for later: ${r.deferred.map(i=>'#'+i).join(', ')}.`);
+    if(r.rejected.length)bits.push(`Rejected: ${r.rejected.map(x=>'#'+x.order_id+' ('+x.reason.replace(/_/g,' ')+')').join(', ')}.`);
+    $('#planmsg').textContent=bits.join(' ')}};
+
+$('#oform').onsubmit=e=>{e.preventDefault();
+  act(()=>api('/orders','POST',{sku:+$('#osku').value,quantity:+$('#oqty').value,urgency:+$('#ourg').value||0}),'Order created')};
+document.body.addEventListener('click',e=>{const d=e.target.dataset;if(!d)return;
+  if(d.f){S.filter=d.f;renderOrders()}
+  if(d.cancel)act(()=>api('/orders/'+d.cancel+'/cancel','POST'),'Order cancelled');
+  if(d.show){S.active=+d.show;show('floor');render()}
+  if(d.done)act(()=>api('/trips/'+d.done+'/complete','POST'),'Trip completed. Stock updated.');
+  if(d.undo)act(()=>api('/trips/'+d.undo+'/cancel','POST'),'Trip cancelled. Its orders are pending again.')});
+document.body.addEventListener('submit',e=>{const f=e.target;if(f.classList.contains('rs')){e.preventDefault();
+  act(()=>api('/products/'+f.dataset.sku+'/restock','POST',{quantity:+f.querySelector('input').value}),'Stock added')}});
+
+const ROBOT_COLORS=['#ffb000','#3ec5ff','#ff6b9a','#7dde6e','#c59bff'];
+function drawMap(){
+  cancelAnimationFrame(S.raf);
+  const box=$('#mapbox');
+  if(!S.floor){box.innerHTML='<div class="empty">No floor yet.<br>Run <b>py seed_demo.py</b> in the api folder to load a demo warehouse.</div>';return}
+  const f=S.floor,p=S.pos.p,a0=activeTrip();
+  const list=a0?(a0.status==='planned'?S.trips.filter(x=>x.status==='planned').slice().reverse():[a0]):[];
+  const shelf={};S.products.forEach(x=>{(shelf[x.node]=shelf[x.node]||[]).push(x)});
+  let g='';
+  f.edges.forEach(e=>{if(e.u===e.v)return;const a=p[e.u],b=p[e.v];
+    g+=`<line x1="${a.x}" y1="${a.y}" x2="${b.x}" y2="${b.y}" stroke="#41566a" stroke-width="2.5"/>`;
+    if(f.nodes<=40)g+=`<text x="${(a.x+b.x)/2}" y="${(a.y+b.y)/2-5}" fill="#7e94a6" font-size="11" text-anchor="middle">${e.length}</text>`});
+  const runs=[];
+  list.forEach((t,i)=>{
+    const col=ROBOT_COLORS[i%ROBOT_COLORS.length],off=i*7,rn=(t.stats&&t.stats.robot)||i+1;
+    const pts=t.route.map(n=>({x:p[n].x+off,y:p[n].y+off}));
+    g+=`<polyline class="route" points="${pts.map(q=>q.x+','+q.y).join(' ')}" fill="none" stroke="${col}" stroke-width="5" stroke-linecap="round" stroke-linejoin="round" opacity=".95"/>`;
+    runs.push({pts,col,i,rn});
+  });
+  for(let i=0;i<f.nodes;i++){
+    const q=p[i],dep=i===f.depot,items=shelf[i]||[];
+    const fill=dep?'#ffb000':items.length?'#0e7c86':'#566a7b';
+    g+=`<circle cx="${q.x}" cy="${q.y}" r="${dep?19:15}" fill="${fill}" stroke="#14202b" stroke-width="3"/>`;
+    g+=`<text x="${q.x}" y="${q.y+4.5}" fill="${dep?'#2a1f00':'#fff'}" font-size="13" font-weight="700" text-anchor="middle">${dep?'D':i}</text>`;
+    if(items.length&&f.nodes<=60)g+=`<text x="${q.x}" y="${q.y+34}" fill="#cfe0ec" font-size="12" text-anchor="middle">${esc(items[0].name.slice(0,16))}</text>`}
+  list.forEach((t,i)=>{const col=ROBOT_COLORS[i%ROBOT_COLORS.length];
+    t.stops.forEach((s,k)=>{const q=p[s.node];
+      g+=`<circle cx="${q.x+16+i*14}" cy="${q.y-16}" r="10" fill="#fff" stroke="${col}" stroke-width="3"/><text x="${q.x+16+i*14}" y="${q.y-12}" font-size="12" font-weight="700" fill="#14202b" text-anchor="middle">${k+1}</text>`})});
+  runs.forEach(r=>{g+=`<g id="bot${r.i}" visibility="hidden"><circle r="10" fill="${r.col}" stroke="#14202b" stroke-width="3"/><text y="4" font-size="11" font-weight="700" text-anchor="middle" fill="#14202b">${r.rn}</text></g>`});
+  box.innerHTML=`<svg viewBox="0 0 800 520" role="img" aria-label="Warehouse floor map">${g}</svg>`;
+  $('#mapnote').textContent=list.length>1?`${list.length} robots are walking their planned trips at the same time. The number on each robot is its robot number.`
+    :list.length===1?`Trip ${list[0].id} (${list[0].status}): the robot leaves the depot, visits the numbered stops in order, and returns. Total walk ${list[0].distance}.`
+    :'Each circle is a spot on the floor. Plan a trip and the robot\'s route appears here.';
+  if(runs.length&&!matchMedia('(prefers-reduced-motion:reduce)').matches)runRobots(runs);
+}
+function runRobots(runs){
+  const items=runs.map(r=>{const seg=[0];for(let i=1;i<r.pts.length;i++)seg.push(seg[i-1]+Math.hypot(r.pts[i].x-r.pts[i-1].x,r.pts[i].y-r.pts[i-1].y));
+    return {r,seg,total:seg[seg.length-1]||1,bot:$('#bot'+r.i)}}).filter(x=>x.bot&&x.r.pts.length>1);
+  if(!items.length)return;
+  items.forEach(x=>x.bot.setAttribute('visibility','visible'));
+  const speed=150,pause=900,t0=performance.now();
+  const tick=now=>{
+    items.forEach(x=>{const cyc=x.total/speed*1000+pause;let m=(now-t0)%cyc,d=Math.min(x.total,m/1000*speed),i=1;
+      while(i<x.seg.length-1&&x.seg[i]<d)i++;
+      const k=(d-x.seg[i-1])/Math.max(x.seg[i]-x.seg[i-1],.001),a=x.r.pts[i-1],b=x.r.pts[i];
+      x.bot.setAttribute('transform',`translate(${a.x+(b.x-a.x)*k},${a.y+(b.y-a.y)*k})`)});
+    S.raf=requestAnimationFrame(tick)};
+  S.raf=requestAnimationFrame(tick);
+}
+function renderTrips(){
+  $('#tlist').innerHTML=S.trips.length?S.trips.map(t=>{const rb=t.stats&&t.stats.robot?` · Robot ${t.stats.robot}`:'';
+    return `<div class="card trip"><h3>Trip ${t.id}${rb}<span class="badge ${t.status}">${t.status}</span></h3>
+    <dl><dt>Orders</dt><dd>${t.order_ids.map(i=>'#'+i).join(', ')}</dd><dt>Walk</dt><dd>${t.distance}</dd><dt>Weight carried</dt><dd>${t.total_weight}</dd><dt>Value</dt><dd>${t.total_value}</dd>
+    <dt>Route</dt><dd style="font-weight:400">${t.route.join(' → ')}</dd></dl>
+    <div class="acts"><button class="btn ghost" data-show="${t.id}">Show on map</button>${t.status==='planned'?`<button class="btn" data-done="${t.id}">Mark as completed</button><button class="btn ghost danger" data-undo="${t.id}">Cancel trip</button>`:''}${t.status==='cancelled'?`<button class="btn ghost danger" data-del="${t.id}">Delete</button>`:''}</div></div>`}).join('')
+    :'<div class="empty" style="grid-column:1/-1">No trips yet. Go to Floor and press Plan next trip.</div>';
+}
+document.body.addEventListener('click',e=>{const d=e.target.dataset;
+  if(d&&d.del)act(()=>api('/trips/'+d.del,'DELETE'),'Trip deleted')});
+show('floor');health();load();
+</script>
+</body>
+</html>

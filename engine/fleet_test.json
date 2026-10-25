@@ -1,0 +1,22 @@
+{
+  "op": "plan_fleet",
+  "robots": 2,
+  "floor": {
+    "nodes": 5,
+    "edges": [[0,1,2],[1,2,3],[2,3,4],[0,3,5],[1,4,2]]
+  },
+  "depot": 0,
+  "capacity": 10,
+  "inventory": [
+    {"sku": 101, "node": 1},
+    {"sku": 102, "node": 2},
+    {"sku": 103, "node": 3},
+    {"sku": 104, "node": 4}
+  ],
+  "orders": [
+    {"id": 1, "sku": 101, "weight": 5, "value": 40, "urgency": 1},
+    {"id": 2, "sku": 102, "weight": 5, "value": 30, "urgency": 2},
+    {"id": 3, "sku": 103, "weight": 5, "value": 20, "urgency": 3},
+    {"id": 4, "sku": 104, "weight": 5, "value": 10, "urgency": 4}
+  ]
+}
